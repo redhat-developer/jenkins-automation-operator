@@ -22,7 +22,7 @@ import (
 
 const (
 	JenkinsTestNamespace = "jenkins-operator-test"
-	timeout              = time.Second * 30
+	timeout              = time.Second * 120
 	interval             = time.Millisecond * 250
 )
 
@@ -63,6 +63,11 @@ var _ = Describe("Jenkins controller", func() {
 			ByCheckingThatTheDeploymentExists(ctx, jenkins)
 		})
 
+		It(fmt.Sprintf("Deployment Is Ready (%s)", jenkinsName), func() {
+			// Check if Deployment is ready
+			ByCheckingThatTheDeploymentIsReady(ctx, jenkins, jenkinsName)
+		})
+
 		It(fmt.Sprintf("Example Service Should Be Created (%s)", constants.DefaultService), func() {
 			// Check if Jenkins Example Services is created
 			ByCheckingThatServiceIsCreated(ctx, constants.DefaultService, JenkinsTestNamespace)
@@ -82,7 +87,6 @@ var _ = Describe("Jenkins controller", func() {
 			// Check if PVC is present for Jenkins
 			ByCheckingThatPVCIsCreated(ctx, jenkinsName, JenkinsTestNamespace)
 		})
-
 		// It(fmt.Sprintf("ServiceMonitor Should Be Created (%s)", jenkinsName), func() {
 		//	// Check if ServiceMonitor is present for Jenkins
 		//	ByCheckingThatServiceMonitorIsCreated(ctx, jenkinsName+"-monitored", JenkinsTestNamespace)
@@ -234,6 +238,25 @@ func ByCheckingThatTheDeploymentExists(ctx context.Context, jenkins *v1alpha2.Je
 	actual := func() (*appsv1.Deployment, error) {
 		err := k8sClient.Get(ctx, key, expected)
 		if err != nil {
+			return nil, err
+		}
+		return expected, nil
+	}
+	Eventually(actual, timeout, interval).ShouldNot(BeNil())
+	Eventually(actual, timeout, interval).Should(Equal(expected))
+}
+
+func ByCheckingThatTheDeploymentIsReady(ctx context.Context, jenkins *v1alpha2.Jenkins, jenkinsName string) {
+	By("By checking that the Pod exists")
+	expected := &appsv1.Deployment{}
+	expectedName := resources.GetJenkinsDeploymentName(jenkins)
+	key := types.NamespacedName{Namespace: jenkins.Namespace, Name: expectedName}
+	actual := func() (*appsv1.Deployment, error) {
+		err := k8sClient.Get(ctx, key, expected)
+		if err != nil {
+			return nil, err
+		}
+		if expected.Status.ReadyReplicas == 0 {
 			return nil, err
 		}
 		return expected, nil
