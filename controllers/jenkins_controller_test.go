@@ -234,8 +234,7 @@ func ByCheckingThatDefaultRoleBindingIsCreated(ctx context.Context, jenkins *v1a
 func ByCheckingThatTheDeploymentIsReady(ctx context.Context, jenkins *v1alpha2.Jenkins, jenkinsName string) {
 	By("By checking that the Pod exists")
 	expected := &appsv1.Deployment{}
-	var expectedReadyReplicas int32
-	expectedReadyReplicas = 1
+	var expectedReadyReplicas int32 = 1
 	expectedName := resources.GetJenkinsDeploymentName(jenkins)
 	key := types.NamespacedName{Namespace: jenkins.Namespace, Name: expectedName}
 	actual := func() (int32, error) {
@@ -252,9 +251,6 @@ func ByCheckingThatTheDeploymentIsReady(ctx context.Context, jenkins *v1alpha2.J
 	Eventually(actual, timeout, interval).Should(Equal(expectedReadyReplicas))
 	//logger.Info(fmt.Sprintf("Deployment replicas count: %v ",expected.Status.ReadyReplicas))
 }
-
-
-
 
 func ByCheckingThatTheDeploymentExists(ctx context.Context, jenkins *v1alpha2.Jenkins) {
 	By("By checking that the Pod exists")
