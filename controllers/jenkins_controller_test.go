@@ -22,7 +22,7 @@ import (
 
 const (
 	JenkinsTestNamespace = "jenkins-operator-test"
-	timeout              = time.Second * 30
+	timeout              = time.Second * 120
 	interval             = time.Millisecond * 250
 )
 
@@ -87,6 +87,11 @@ var _ = Describe("Jenkins controller", func() {
 		//	// Check if ServiceMonitor is present for Jenkins
 		//	ByCheckingThatServiceMonitorIsCreated(ctx, jenkinsName+"-monitored", JenkinsTestNamespace)
 		// })
+		// })
+		It(fmt.Sprintf("Deployment Is Ready (%s)", jenkinsName), func() {
+			// Check if Deployment is ready
+			ByCheckingThatTheDeploymentIsReady(ctx, jenkins, jenkinsName)
+		})
 
 		It(fmt.Sprintf("Namespace should be deleted (%s)", jenkinsName), func() {
 			// Cleanup
@@ -225,6 +230,31 @@ func ByCheckingThatDefaultRoleBindingIsCreated(ctx context.Context, jenkins *v1a
 	Eventually(actual, timeout, interval).ShouldNot(BeNil())
 	Eventually(actual, timeout, interval).Should(Equal(expected))
 }
+
+func ByCheckingThatTheDeploymentIsReady(ctx context.Context, jenkins *v1alpha2.Jenkins, jenkinsName string) {
+	By("By checking that the Pod exists")
+	expected := &appsv1.Deployment{}
+	var expectedReadyReplicas int32
+	expectedReadyReplicas = 1
+	expectedName := resources.GetJenkinsDeploymentName(jenkins)
+	key := types.NamespacedName{Namespace: jenkins.Namespace, Name: expectedName}
+	actual := func() (int32, error) {
+		err := k8sClient.Get(ctx, key, expected)
+		if err != nil {
+			return expected.Status.ReadyReplicas, err
+		}
+		if expectedReadyReplicas == 0 {
+			return expected.Status.ReadyReplicas, err
+		}
+		return expected.Status.ReadyReplicas, nil
+	}
+	Eventually(actual, timeout,interval).ShouldNot(Equal(0))
+	Eventually(actual, timeout, interval).Should(Equal(expectedReadyReplicas))
+	//logger.Info(fmt.Sprintf("Deployment replicas count: %v ",expected.Status.ReadyReplicas))
+}
+
+
+
 
 func ByCheckingThatTheDeploymentExists(ctx context.Context, jenkins *v1alpha2.Jenkins) {
 	By("By checking that the Pod exists")
