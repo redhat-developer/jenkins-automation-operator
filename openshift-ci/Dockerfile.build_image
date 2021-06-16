@@ -56,9 +56,11 @@ RUN make bin
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL com.redhat.delivery.appregistry=true
 LABEL maintainer "openshift-dev-services+jenkins@redhat.com"
-ENV LANG=en_US.utf8
-ENV GOPATH=/tmp/go
 
-COPY --from=builder /tmp/go/src/github.com/jenkinsci/jenkins-automation-operator/build/_output/bin/manager /manager
-ENTRYPOINT [ "/manager" ]
+ENV LANG=en_US.utf8 \
+    OPERATOR_NAME=jenkins-operator
+
+COPY --from=builder /tmp/go/src/github.com/jenkinsci/jenkins-automation-operator/build/_output/bin/${OPERATOR_NAME} /jenkins-operator
+
+ENTRYPOINT [ "/jenkins-operator" ]
 
