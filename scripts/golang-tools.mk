@@ -41,7 +41,7 @@ ifeq (, $(shell which kubebuilder))
 	set -e ; \
 	KUBEBUILDER_TMP_DIR=$$(mktemp -d) ;\
 	cd $$KUBEBUILDER_TMP_DIR ;\
-	curl -L https://go.kubebuilder.io/dl/2.3.1/$$GOOS/$$GOARCH | tar -xz -C $$KUBEBUILDER_TMP_DIR;\
+	curl -L https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.1/kubebuilder_2.3.1_$$(go env GOOS)_$$(go env GOARCH).tar.gz  | tar -xz -C $$KUBEBUILDER_TMP_DIR;\
 	mkdir -p $$KUBEBUILDER_ASSETS; \
 	mv kubebuilder_2.3.1_"$$GOOS"_"$$GOARCH"/bin/* $$KUBEBUILDER_ASSETS ;\
 	rm -fr $$KUBEBUILDER_TMP_DIR ;\
