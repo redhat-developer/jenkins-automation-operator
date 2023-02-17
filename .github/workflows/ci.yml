@@ -30,7 +30,7 @@ jobs:
         sudo mv operator-sdk /bin/
 
     - name: Start Minikube
-      uses: medyagh/setup-minikube@master
+      uses: medyagh/setup-minikube@4be35a4992648652d486736a0abb478fe2341a5a #master
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
@@ -47,4 +47,4 @@ jobs:
         make e2e USE_EXISTING_CLUSTER=true
 
     - name: Codecov
-      uses: codecov/codecov-action@v1.1.1
+      uses: codecov/codecov-action@1fc7722ded4708880a5aea49f2bfafb9336f0c8d #v1.1.1
